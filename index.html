@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekonomi Quest - Latihan Ujian Madrasah IPS</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+        body { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
+        .container { background: var(--card); width: 100%; max-width: 750px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: var(--primary); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { font-size: 1.25rem; }
+        .stats { display: flex; gap: 10px; font-weight: bold; font-size: 0.9rem; }
+        .stat-badge { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 12px; }
+        .progress-container { width: 100%; height: 8px; background: #e2e8f0; }
+        .progress-bar { height: 100%; background: var(--secondary); width: 0%; transition: width 0.4s ease; }
+        .timer-bar { height: 5px; background: var(--warning); width: 100%; transition: width 1s linear; }
+        .content { padding: 25px; }
+        .screen { text-align: center; padding: 15px 10px; }
+        .screen h2 { font-size: 1.7rem; color: var(--primary); margin-bottom: 10px; }
+        .screen p { color: #475569; margin-bottom: 20px; line-height: 1.6; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 26px; font-size: 1rem; font-weight: bold; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .badge-type { display: inline-block; background: #dbeafe; color: var(--primary-dark); padding: 5px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; margin-bottom: 12px; }
+        .illustration-box { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; padding: 12px; margin-bottom: 16px; display: flex; justify-content: center; align-items: center; min-height: 135px; }
+        .question-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 18px; line-height: 1.5; }
+        .options-grid { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { background: #f8fafc; border: 2px solid #e2e8f0; padding: 13px 16px; border-radius: 12px; text-align: left; font-size: 0.98rem; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #eff6ff; }
+        .option-btn.selected { border-color: var(--primary); background: #dbeafe; font-weight: bold; }
+        .option-btn.correct { border-color: var(--secondary); background: #d1fae5; color: #065f46; }
+        .option-btn.wrong { border-color: var(--danger); background: #fee2e2; color: #991b1b; }
+        .matching-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .match-col { display: flex; flex-direction: column; gap: 10px; }
+        .match-item { padding: 12px; border: 2px solid #cbd5e1; border-radius: 10px; background: #f8fafc; cursor: pointer; font-size: 0.9rem; text-align: center; }
+        .match-item.active { border-color: var(--warning); background: #fef3c7; font-weight: bold; }
+        .match-item.matched { border-color: var(--secondary); background: #d1fae5; color: #065f46; cursor: default; }
+        .feedback { margin-top: 18px; padding: 15px; border-radius: 12px; display: none; }
+        .feedback.success { background: #d1fae5; border-left: 5px solid var(--secondary); color: #065f46; }
+        .feedback.error { background: #fee2e2; border-left: 5px solid var(--danger); color: #991b1b; }
+        .hidden { display: none !important; }
+        @media (max-width: 600px) { .matching-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏛️ Ekonomi Quest: MA Madinatunnajah</h1>
+        <div class="stats">
+            <div class="stat-badge">❤️ <span id="lives">3</span></div>
+            <div class="stat-badge">🔥 Kombo: <span id="combo">0</span></div>
+            <div class="stat-badge">⭐ Skor: <span id="score">0</span></div>
+        </div>
+    </div>
+    <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="timer-bar" id="timer-bar"></div>
+    <div class="content">
+        <div id="start-screen" class="screen">
+            <div style="font-size: 3.5rem; margin-bottom: 10px;">📊💰🏦</div>
+            <h2>Siap Taklukkan Ujian Madrasah IPS?</h2>
+            <p>Uji pemahamanmu berdasarkan <strong>Kisi-Kisi Ujian Madrasah IPS 2025/2026</strong>! Dilengkapi ilustrasi kurva, soal pilihan ganda, pilihan ganda kompleks, menjodohkan, dan benar/salah.</p>
+            <button class="btn" onclick="startGame()">Mulai Tantangan Sekarang 🚀</button>
+        </div>
+        <div id="quiz-screen" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge-type" id="q-type">Soal</span>
+                <span style="font-weight: bold; color: #64748b;" id="q-counter">1 / 15</span>
+            </div>
+            <div class="illustration-box" id="illustration-box"></div>
+            <div class="question-text" id="question-text"></div>
+            <div id="options-container"></div>
+            <button class="btn hidden" id="submit-complex-btn" style="margin-top: 15px; width: 100%;" onclick="checkComplexAnswer()">Kunci Jawaban</button>
+            <div class="feedback" id="feedback-box">
+                <strong id="feedback-title"></strong>
+                <p id="feedback-desc" style="margin-top: 5px; font-size: 0.95rem;"></p>
+                <button class="btn" id="next-btn" style="margin-top: 12px; padding: 10px 20px; font-size: 0.9rem;" onclick="nextQuestion()">Lanjut Soal Berikutnya ➡️</button>
+            </div>
+        </div>
+        <div id="end-screen" class="screen hidden">
+            <div id="end-emoji" style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+            <h2 id="end-title">Tantangan Selesai!</h2>
+            <p id="end-subtitle"></p>
+            <div style="background: #eff6ff; border: 2px solid #bfdbfe; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <div>Skor Akhir Kamu</div>
+                <div style="font-size: 2.8rem; font-weight: 800; color: var(--primary);" id="final-score">0</div>
+                <div style="font-size: 0.95rem; color: #475569;" id="final-stats"></div>
+            </div>
+            <button class="btn" onclick="startGame()">Main Lagi 🔄</button>
+        </div>
+    </div>
+</div>
+<script>
+const illustrations = {
+    equilibrium: `<svg width="240" height="125" viewBox="0 0 240 125">
+        <line x1="30" y1="10" x2="30" y2="105" stroke="#334155" stroke-width="2"/>
+        <line x1="30" y1="105" x2="210" y2="105" stroke="#334155" stroke-width="2"/>
+        <text x="15" y="20" font-size="11" font-weight="bold">P</text>
+        <text x="200" y="120" font-size="11" font-weight="bold">Q</text>
+        <line x1="50" y1="22" x2="180" y2="92" stroke="#ef4444" stroke-width="3"/>
+        <line x1="50" y1="92" x2="180" y2="22" stroke="#10b981" stroke-width="3"/>
+        <text x="185" y="95" font-size="11" fill="#ef4444" font-weight="bold">D</text>
+        <text x="185" y="26" font-size="11" fill="#10b981" font-weight="bold">S</text>
+        <circle cx="115" cy="57" r="5" fill="#2563eb"/>
+        <text x="123" y="61" font-size="10" fill="#2563eb" font-weight="bold">E (Keseimbangan)</text>
+    </svg>`,
+    demandCurve: `<svg width="240" height="125" viewBox="0 0 240 125">
+        <line x1="30" y1="10" x2="30" y2="105" stroke="#334155" stroke-width="2"/>
+        <line x1="30" y1="105" x2="210" y2="105" stroke="#334155" stroke-width="2"/>
+        <path d="M 50 22 Q 110 68 185 92" fill="none" stroke="#ef4444" stroke-width="3.5"/>
+        <text x="115" y="52" font-size="11" fill="#ef4444" font-weight="bold">Kurva Permintaan (D)</text>
+    </svg>`,
+    supplyCurve: `<svg width="240" height="125" viewBox="0 0 240 125">
+        <line x1="30" y1="10" x2="30" y2="105" stroke="#334155" stroke-width="2"/>
+        <line x1="30" y1="105" x2="210" y2="105" stroke="#334155" stroke-width="2"/>
+        <line x1="50" y1="92" x2="180" y2="22" stroke="#10b981" stroke-width="3.5"/>
+        <text x="55" y="42" font-size="11" fill="#10b981" font-weight="bold">Kurva Penawaran (S)</text>
+    </svg>`,
+    ojk: `<svg width="240" height="115" viewBox="0 0 240 115">
+        <rect x="70" y="22" width="100" height="72" rx="8" fill="#1e3a8a"/>
+        <text x="120" y="62" font-size="21" fill="white" font-weight="bold" text-anchor="middle">OJK</text>
+        <text x="120" y="80" font-size="8" fill="#93c5fd" text-anchor="middle">PENGAWAS JASA KEUANGAN</text>
+    </svg>`,
+    money: `<svg width="240" height="115" viewBox="0 0 240 115">
+        <rect x="18" y="25" width="90" height="48" rx="6" fill="#10b981"/>
+        <text x="63" y="54" font-size="12" font-weight="bold" text-anchor="middle" fill="white">UANG KARTAL</text>
+        <rect x="130" y="25" width="92" height="48" rx="8" fill="#2563eb"/>
+        <text x="176" y="54" font-size="11" fill="white" font-weight="bold" text-anchor="middle">E-MONEY / QRIS</text>
+    </svg>`,
+    market: `<svg width="240" height="115" viewBox="0 0 240 115">
+        <rect x="18" y="30" width="90" height="55" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+        <text x="63" y="62" font-size="9" font-weight="bold" text-anchor="middle" fill="#92400e">PASAR TRADISIONAL</text>
+        <rect x="130" y="30" width="90" height="55" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+        <text x="175" y="62" font-size="9" font-weight="bold" text-anchor="middle" fill="#3730a3">E-COMMERCE</text>
+    </svg>`
+};
+const questions = new Array(
+    {
+        type: "Pilihan Ganda (Indikator 1)",
+        illustration: "equilibrium",
+        question: "Perhatikan titik E pada kurva di atas! Apa yang dimaksud dengan harga keseimbangan (equilibrium price)?",
+        options: new Array(
+            "Harga tertinggi yang ditetapkan pemerintah untuk melindungi produsen",
+            "Harga yang terbentuk saat jumlah barang yang diminta sama dengan jumlah barang yang ditawarkan",
+            "Harga terendah di pasar tradisional akibat kelebihan stok barang",
+            "Harga yang ditentukan sepihak oleh pembeli saat terjadi kelangkaan"
+        ),
+        answer: 1,
+        explanation: "Harga keseimbangan terbentuk pada titik perpotongan kurva permintaan (D) dan penawaran (S), di mana jumlah permintaan sama dengan jumlah penawaran."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 2 & 3)",
+        illustration: "equilibrium",
+        question: "Menjelang Hari Raya Idul Fitri, permintaan masyarakat terhadap daging sapi meningkat tajam sementara jumlah penawaran tetap. Bagaimana pengaruhnya terhadap harga keseimbangan?",
+        options: new Array(
+            "Harga keseimbangan akan turun drastis",
+            "Harga keseimbangan tidak mengalami perubahan",
+            "Harga keseimbangan akan naik karena kurva permintaan bergeser ke kanan",
+            "Penawaran otomatis hilang dari pasar"
+        ),
+        answer: 2,
+        explanation: "Jika permintaan naik (kurva D bergeser ke kanan) sedangkan penawaran tetap, maka titik keseimbangan bergeser naik sehingga harga meningkat."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 4 & 5)",
+        illustration: "money",
+        question: "Rina membayar belanjaan di kantin madrasah dengan memindai kode QR di ponselnya, sedangkan ayahnya mengajukan pinjaman modal usaha di bank. Kegiatan Rina dan ayahnya berturut-turut menunjukkan...",
+        options: new Array(
+            "Jasa keuangan digital (QRIS) dan kegiatan kredit",
+            "Kegiatan kliring dan transaksi giro",
+            "Investasi reksadana dan gadai syariah",
+            "Asuransi kerugian dan dana pensiun"
+        ),
+        answer: 0,
+        explanation: "Pembayaran berbasis aplikasi/QR adalah contoh jasa keuangan digital, sedangkan penyaluran pinjaman dana oleh bank disebut kegiatan kredit."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 6 & 7)",
+        illustration: "ojk",
+        question: "OJK adalah lembaga independen yang mengawasi sektor keuangan di Indonesia. Apa kepanjangan OJK dan salah satu tujuan utamanya?",
+        options: new Array(
+            "Organisasi Jaminan Keuangan; mencetak uang kartal",
+            "Otoritas Jasa Keuangan; melindungi kepentingan konsumen dan masyarakat di sektor jasa keuangan",
+            "Otoritas Jaringan Kredit; mengatur suku bunga pinjaman luar negeri",
+            "Organisasi Jasa Kredit; menggantikan fungsi bank umum"
+        ),
+        answer: 1,
+        explanation: "OJK (Otoritas Jasa Keuangan) dibentuk agar kegiatan jasa keuangan terselenggara teratur, adil, transparan, serta melindungi konsumen."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 8 & 11)",
+        illustration: "market",
+        question: "Pasar Sekaten di Yogyakarta dan Pekan Raya Jakarta (PRJ) hanya diadakan satu tahun sekali pada momen tertentu. Berdasarkan waktu penyelenggaraannya, pasar tersebut termasuk jenis...",
+        options: new Array("Pasar harian", "Pasar mingguan", "Pasar bulanan", "Pasar tahunan"),
+        answer: 3,
+        explanation: "Pasar tahunan adalah pasar yang diselenggarakan satu kali dalam setahun, seperti PRJ atau Pasar Sekaten."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 9, 10, 13)",
+        illustration: "money",
+        question: "Pak Budi membayar pembelian bahan bangunan menggunakan lembar Cek yang diterbitkan oleh bank tempat ia menyimpan dana. Cek dan Bilyet Giro termasuk ke dalam jenis...",
+        options: new Array("Uang kartal", "Uang giral", "Uang barang", "Uang logam mulia"),
+        answer: 1,
+        explanation: "Uang giral adalah alat pembayaran berupa surat berharga yang dikeluarkan bank umum, seperti cek dan bilyet giro."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 12)",
+        illustration: "ojk",
+        question: "Bu Siti membutuhkan dana cepat dengan menjaminkan perhiasan emas miliknya agar bisa ditebus kembali nanti. Lembaga keuangan nonbank yang tepat dikunjungi Bu Siti adalah...",
+        options: new Array("Perusahaan Asuransi", "Dana Pensiun", "Pegadaian", "Bursa Efek"),
+        answer: 2,
+        explanation: "Pegadaian adalah lembaga keuangan nonbank yang memberikan pinjaman dengan jaminan barang bergerak seperti emas."
+    },
+    {
+        type: "Pilihan Ganda (Indikator 14 & 15)",
+        illustration: "demandCurve",
+        question: "Perhatikan grafik di atas! Mengapa kurva permintaan (Demand) selalu bergerak menurun dari kiri atas ke kanan bawah?",
+        options: new Array(
+            "Karena jika harga naik, jumlah barang yang diminta konsumen akan turun (berbanding terbalik)",
+            "Karena produsen selalu ingin menjual barang sebanyak-banyaknya saat harga murah",
+            "Karena harga barang tidak memengaruhi minat beli masyarakat",
+            "Karena hubungan antara harga dan permintaan selalu berbanding lurus"
+        ),
+        answer: 0,
+        explanation: "Kurva permintaan menurun dari kiri atas ke kanan bawah karena hukum permintaan menyatakan harga dan jumlah permintaan berbanding terbalik."
+    },
+    {
+        type: "Pilihan Ganda Kompleks - Pilih 2 Jawaban! (Indikator 16-18)",
+        illustration: "supplyCurve",
+        question: "Berdasarkan hukum penawaran dan kurva di atas, manakah DUA pernyataan yang benar mengenai perilaku produsen?",
+        isComplex: true,
+        options: new Array(
+            "Ketika harga cabai naik tinggi, petani terdorong menambah jumlah cabai yang dijual ke pasar",
+            "Kurva penawaran bergerak dari kiri bawah ke kanan atas (berbanding lurus)",
+            "Jika harga barang turun drastis, produsen justru akan menambah jumlah penawarannya",
+            "Kurva penawaran memiliki kemiringan negatif sama seperti kurva permintaan"
+        ),
+        correctIndices: new Array(0, 1),
+        explanation: "Hukum penawaran menyatakan hubungan berbanding lurus: saat harga naik, jumlah yang ditawarkan naik, dan kurva bergerak dari kiri bawah ke kanan atas."
+    },
+    {
+        type: "Pilihan Ganda Kompleks - Pilih 2 Jawaban! (Indikator 19-20)",
+        illustration: "money",
+        question: "Pilihlah DUA pernyataan yang benar mengenai fungsi asli uang dan manfaat uang elektronik (e-money)!",
+        isComplex: true,
+        options: new Array(
+            "Fungsi asli uang adalah sebagai alat tukar dan satuan hitung",
+            "Uang elektronik memudahkan transaksi mikro tanpa perlu repot mencari uang kembalian",
+            "Uang kartal hanya berlaku jika ditransaksikan melalui mesin EDC bank",
+            "Uang elektronik tidak memiliki batas saldo maksimal dan tidak diawasi Bank Indonesia"
+        ),
+        correctIndices: new Array(0, 1),
+        explanation: "Fungsi asli uang meliputi alat tukar dan satuan hitung. Sementara itu, e-money praktis untuk transaksi cepat tanpa uang kembalian."
+    },
+    {
+        type: "Menjodohkan Konsep (Indikator 21-25)",
+        illustration: "ojk",
+        question: "Klik pasangan yang tepat antara istilah ekonomi di kolom kiri dan penjelasannya di kolom kanan!",
+        isMatching: true,
+        pairs: new Array(
+            { left: "Uang Kartal", right: "Uang kertas & logam yang sah beredar" },
+            { left: "Pengawas Pasar Modal", right: "Tugas utama OJK di bursa efek" },
+            { left: "Pasar Tradisional", right: "Terjadi interaksi tawar-menawar langsung" },
+            { left: "Asuransi", right: "Lembaga pengalihan risiko kerugian" }
+        ),
+        explanation: "Semua konsep dasar mengenai jenis uang, peran OJK, pasar tradisional, dan lembaga nonbank berhasil dijodohkan!"
+    },
+    {
+        type: "Benar atau Salah (Indikator 26-27)",
+        illustration: "money",
+        question: "PERNYATAAN: Uang logam dan uang kertas yang dicetak oleh Bank Indonesia dan digunakan masyarakat sehari-hari disebut Uang Giral.",
+        options: new Array("BENAR", "SALAH"),
+        answer: 1,
+        explanation: "SALAH. Uang kertas dan uang logam yang diedarkan oleh Bank Indonesia disebut Uang Kartal."
+    },
+    {
+        type: "Benar atau Salah (Indikator 28-30)",
+        illustration: "demandCurve",
+        question: "PERNYATAAN: Pasar tidak selalu berupa bangunan fisik; pertemuan penjual dan pembeli secara online di marketplace juga merupakan bentuk pasar.",
+        options: new Array("BENAR", "SALAH"),
+        answer: 0,
+        explanation: "BENAR. Pasar adalah bertemunya permintaan dan penawaran untuk bertransaksi, baik secara fisik maupun daring."
+    },
+    {
+        type: "Analisis Studi Kasus (Indikator 33 & 34)",
+        illustration: "market",
+        question: "Maraknya belanja online (e-commerce) dan supermarket modern membuat omzet pedagang pasar tradisional menurun. Strategi paling adaptif bagi pedagang pasar tradisional adalah...",
+        options: new Array(
+            "Menolak seluruh teknologi pembayaran dan menaikkan harga barang setinggi mungkin",
+            "Menjaga kesegaran produk, menjaga kebersihan lapak, serta menerima pembayaran QRIS dan pesan antar online",
+            "Menutup pasar tradisional dan memaksa pemerintah melarang seluruh transaksi internet",
+            "Menghilangkan sistem tawar-menawar yang menjadi ciri khas pasar tradisional"
+        ),
+        answer: 1,
+        explanation: "Pedagang pasar tradisional dapat bersaing dengan menjaga kualitas produk segar, kebersihan, serta beradaptasi dengan QRIS dan pesan antar."
+    },
+    {
+        type: "Analisis Kurva Final (Indikator 32 & 35)",
+        illustration: "equilibrium",
+        question: "Jika pemerintah menetapkan harga eceran tertinggi DI BAWAH titik harga keseimbangan E, dampak apa yang akan terjadi di pasar?",
+        options: new Array(
+            "Terjadi kelebihan penawaran karena barang menumpuk",
+            "Terjadi kelangkaan (shortage) karena harga murah menarik banyak pembeli namun produsen mengurangi pasokan",
+            "Jumlah permintaan dan penawaran tetap seimbang sempurna",
+            "Harga pasar otomatis naik melebihi titik keseimbangan"
+        ),
+        answer: 1,
+        explanation: "Harga di bawah titik keseimbangan membuat permintaan melonjak sementara produsen enggan menjual banyak, sehingga memicu kelangkaan."
+    }
+);
+let currentIdx = 0;
+let score = 0;
+let lives = 3;
+let combo = 0;
+let timer;
+let timeLeft = 45;
+let selectedComplex = new Array();
+let selectedLeft = null;
+let matchedCount = 0;
+
+function startGame() {
+    currentIdx = 0;
+    score = 0;
+    lives = 3;
+    combo = 0;
+    document.getElementById('next-btn').innerText = "Lanjut Soal Berikutnya ➡️";
+    updateStats();
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    loadQuestion();
+}
+
+function updateStats() {
+    document.getElementById('lives').innerText = lives;
+    document.getElementById('combo').innerText = combo;
+    document.getElementById('score').innerText = score;
+    const progress = (currentIdx / questions.length) * 100;
+    document.getElementById('progress-bar').style.width = `${progress}%`;
+}
+
+function startTimer() {
+    clearInterval(timer);
+    timeLeft = 45;
+    const timerBar = document.getElementById('timer-bar');
+    timerBar.style.width = '100%';
+    timerBar.style.background = '#f59e0b';
+
+    timer = setInterval(() => {
+        timeLeft--;
+        timerBar.style.width = `${(timeLeft / 45) * 100}%`;
+        if (timeLeft <= 10) timerBar.style.background = '#ef4444';
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            handleWrong("Waktu Habis! Kamu terlalu lama berpikir.");
+        }
+    }, 1000);
+}
+
+function loadQuestion() {
+    const q = questions[currentIdx];
+    selectedComplex = new Array();
+    selectedLeft = null;
+    matchedCount = 0;
+
+    document.getElementById('q-type').innerText = q.type;
+    document.getElementById('q-counter').innerText = `Soal ${currentIdx + 1} / ${questions.length}`;
+    document.getElementById('illustration-box').innerHTML = illustrations[q.illustration];
+    document.getElementById('question-text').innerText = q.question;
+    document.getElementById('feedback-box').style.display = 'none';
+    document.getElementById('submit-complex-btn').classList.add('hidden');
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    if (q.isMatching) {
+        renderMatching(q, container);
+    } else if (q.isComplex) {
+        renderComplex(q, container);
+    } else {
+        renderStandard(q, container);
+    }
+
+    startTimer();
+}
+
+function renderStandard(q, container) {
+    const grid = document.createElement('div');
+    grid.className = 'options-grid';
+    q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> <span>${opt}</span>`;
+        btn.onclick = () => checkStandardAnswer(index, btn);
+        grid.appendChild(btn);
+    });
+    container.appendChild(grid);
+}
+
+function renderComplex(q, container) {
+    document.getElementById('submit-complex-btn').classList.remove('hidden');
+    const grid = document.createElement('div');
+    grid.className = 'options-grid';
+    q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<input type="checkbox" style="pointer-events:none; transform: scale(1.2);"> <span>${opt}</span>`;
+        btn.onclick = () => {
+            if (document.getElementById('feedback-box').style.display === 'block') return;
+            const cb = btn.querySelector('input');
+            if (selectedComplex.includes(index)) {
+                selectedComplex = selectedComplex.filter(i => i !== index);
+                btn.classList.remove('selected');
+                cb.checked = false;
+            } else {
+                selectedComplex.push(index);
+                btn.classList.add('selected');
+                cb.checked = true;
+            }
+        };
+        grid.appendChild(btn);
+    });
+    container.appendChild(grid);
+}
+function renderMatching(q, container) {
+    const grid = document.createElement('div');
+    grid.className = 'matching-grid';
+
+    const leftCol = document.createElement('div');
+    leftCol.className = 'match-col';
+    const rightCol = document.createElement('div');
+    rightCol.className = 'match-col';
+
+    const leftItems = q.pairs.map((p, idx) => ({ text: p.left, id: idx }));
+    const rightItems = q.pairs.map((p, idx) => ({ text: p.right, id: idx })).sort(() => Math.random() - 0.5);
+
+    leftItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'match-item';
+        div.innerText = item.text;
+        div.dataset.id = item.id;
+        div.onclick = () => {
+            if (div.classList.contains('matched')) return;
+            document.querySelectorAll('.match-col:first-child .match-item').forEach(el => el.classList.remove('active'));
+            div.classList.add('active');
+            selectedLeft = div;
+        };
+        leftCol.appendChild(div);
+    });
+
+    rightItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'match-item';
+        div.innerText = item.text;
+        div.dataset.id = item.id;
+        div.onclick = () => {
+            if (div.classList.contains('matched') || !selectedLeft) return;
+            if (selectedLeft.dataset.id === div.dataset.id) {
+                selectedLeft.classList.remove('active');
+                selectedLeft.classList.add('matched');
+                div.classList.add('matched');
+                selectedLeft = null;
+                matchedCount++;
+                if (matchedCount === q.pairs.length) {
+                    clearInterval(timer);
+                    handleCorrect(q.explanation);
+                }
+            } else {
+                selectedLeft.classList.remove('active');
+                selectedLeft = null;
+                div.style.borderColor = '#ef4444';
+                setTimeout(() => div.style.borderColor = '#cbd5e1', 500);
+            }
+        };
+        rightCol.appendChild(div);
+    });
+
+    grid.appendChild(leftCol);
+    grid.appendChild(rightCol);
+    container.appendChild(grid);
+}
+
+function checkStandardAnswer(selectedIndex, btnElement) {
+    if (document.getElementById('feedback-box').style.display === 'block') return;
+    clearInterval(timer);
+
+    const q = questions[currentIdx];
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    if (selectedIndex === q.answer) {
+        btnElement.classList.add('correct');
+        handleCorrect(q.explanation);
+    } else {
+        btnElement.classList.add('wrong');
+        buttons[q.answer].classList.add('correct');
+        handleWrong(q.explanation);
+    }
+}
+
+function checkComplexAnswer() {
+    if (selectedComplex.length === 0) {
+        alert("Pilih minimal satu jawaban terlebih dahulu!");
+        return;
+    }
+    clearInterval(timer);
+    document.getElementById('submit-complex-btn').classList.add('hidden');
+
+    const q = questions[currentIdx];
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    const sortedSelected = selectedComplex.slice().sort((a, b) => a - b);
+    const sortedCorrect = q.correctIndices.slice().sort((a, b) => a - b);
+    const isExact = JSON.stringify(sortedSelected) === JSON.stringify(sortedCorrect);
+
+    buttons.forEach((btn, idx) => {
+        if (q.correctIndices.includes(idx)) {
+            btn.classList.add('correct');
+        } else if (selectedComplex.includes(idx)) {
+            btn.classList.add('wrong');
+        }
+    });
+
+    if (isExact) {
+        handleCorrect(q.explanation);
+    } else {
+        handleWrong(q.explanation);
+    }
+}
+
+function handleCorrect(explanation) {
+    combo++;
+    const bonus = combo * 20;
+    score += (100 + bonus);
+    updateStats();
+
+    const fb = document.getElementById('feedback-box');
+    fb.className = 'feedback success';
+    document.getElementById('feedback-title').innerText = `✅ Tepat Sekali! (+${100 + bonus} Poin)`;
+    document.getElementById('feedback-desc').innerText = explanation;
+    fb.style.display = 'block';
+}
+
+function handleWrong(explanation) {
+    combo = 0;
+    lives--;
+    updateStats();
+
+    const fb = document.getElementById('feedback-box');
+    fb.className = 'feedback error';
+    document.getElementById('feedback-title').innerText = `❌ Kurang Tepat! (-1 Nyawa)`;
+    document.getElementById('feedback-desc').innerText = explanation;
+    fb.style.display = 'block';
+
+    if (lives <= 0) {
+        document.getElementById('next-btn').innerText = "Lihat Hasil Akhir 🏁";
+    }
+}
+
+function nextQuestion() {
+    currentIdx++;
+    if (lives <= 0 || currentIdx >= questions.length) {
+        endGame();
+    } else {
+        updateStats();
+        loadQuestion();
+    }
+}
+
+function endGame() {
+    clearInterval(timer);
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('end-screen').classList.remove('hidden');
+
+    document.getElementById('final-score').innerText = score;
+    if (lives <= 0) {
+        document.getElementById('end-emoji').innerText = "💔";
+        document.getElementById('end-title').innerText = "Nyawa Habis!";
+        document.getElementById('end-subtitle').innerText = "Jangan menyerah! Pelajari kembali pembahasannya dan coba lagi.";
+    } else {
+        document.getElementById('end-emoji').innerText = "🏆";
+        document.getElementById('end-title').innerText = "Selamat, Pejuang Ujian!";
+        document.getElementById('end-subtitle').innerText = "Kamu berhasil menaklukkan seluruh tantangan kisi-kisi IPS MA Madinatunnajah!";
+    }
+    document.getElementById('final-stats').innerText = `Sisa Nyawa: ${lives} ❤️ | Soal Diselesaikan: ${currentIdx} / ${questions.length}`;
+}
+</script>
+</body>
+</html>
